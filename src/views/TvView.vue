@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import api from '@/plugins/axios'
 import Loading from 'vue-loading-overlay'
+import genreStore from '@/stores/genre'
 
 const isLoading = ref(false);
 
@@ -30,14 +31,28 @@ const listMovies = async (genreId) => {
   movies.value = response.data.results
   isLoading.value = false;
 };
+
+onMounted(async () => {
+  isLoading.value = true
+  await genreStore.getAllGenres('tv')
+  isLoading.value = false
+})
+
 </script>
 
 <template>
     <h1>Programas de TV</h1>
     <ul class="genre-list">
-      <li v-for="genre in genres" :key="genre.id" @click="listMovies(genre.id)" class="genre-item">
-    {{ genre.name }}
-</li>
+      <li
+      v-for="genre in genreStore.genres"
+      :key="genre.id"
+      @click="listMovies(genre.id)"
+      class="genre-item"
+    >
+    
+      {{ genre.name }}
+    
+    </li>
     </ul>
     <loading v-model:active="isLoading" is-full-page />
 
@@ -49,10 +64,11 @@ const listMovies = async (genreId) => {
     <div class="movie-details">
       <p class="movie-title">{{ movie.name }}</p>
       <p class="movie-genres">{{ movie.original_name }}</p>
-      <p class="movie-release-date">{{ formatDate(movie.release_date) }}</p>
+      <p class="movie-release-date">{{ formatDate(movie.first_air_date) }}</p>
       <p class="movie-genres">
-  <span v-for="genre_id in movie.genre_ids" :key="genre_id" @click="listMovies(genre_id)">
-    {{ getGenreName(genre_id) }} 
+
+        <span v-for="genre_id in movie.genre_ids" :key="genre_id" @click="listMovies(genre_id)">
+    {{ genreStore.getGenreName(genre_id) }}
   </span>
 </p>
     </div>
